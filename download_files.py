@@ -9,9 +9,10 @@ from Bio.PDB import *
 
 
 #change your paths to the relevant locations!
-workspace ='D:\\Covid_pipeline/covid_sequence_processing'
-savespace = 'D:\\Covid_pipeline/human_pdbs'
-alphafold_dir = 'D:\\Covid_pipeline/alphafold_precomputed/UP000005640_9606_HUMAN'
+workspace ='covid_sequence_processing'
+savespace = 'human_pdbs'
+alphafold_dir = 'alphafold_precomputed'
+workspace = os.getcwd()
 os.chdir(workspace)
 
 df = pd.read_csv('structures_with_5AA_cutoff.csv')
@@ -26,13 +27,14 @@ human_pdbs = df.loc[df['pdb_id'] != 'None']['pdb_id'].values
 
 #Get files for each human pdb id
 for pdb_id in human_pdbs:
-    pdbl.retrieve_pdb_file(pdb_id, pdir = savespace, file_format='pdb')
+    pdbl.retrieve_pdb_file(pdb_id, pdir = savespace, file_format='pdb', overwrite=True)
 
 #what needs an alphafold?
 needs_alpha = df.loc[df['pdb_data'] == 'None']['uniprot_id']
 
 #Search precomputed directory for files
-os.chdir(alphafold_dir)
+alphafold_dir = os.path.join(workspace, alphafold_dir)
+os.mkdir(alphafold_dir)
 #get all pdb zipped archives
 files = glob.glob('*.pdb.gz')
 
@@ -63,5 +65,7 @@ for alphafold in needs_downloading:
         unavailable.append(alphafold)
 
 #print out what we need to manually fold
-print(unavailable)
+unavailable_df = pd.DataFrame({'PDB_ID': unavailable})
+unavailable_df.to_csv(os.path.join(savespace, 'unavailable_af.csv'))
+
 
