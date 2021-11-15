@@ -37,10 +37,13 @@ for root, dirs, files in os.walk(human_pdbs_dir):
         base, extension = os.path.splitext(filename)
         # extract PDB_ID
         if extension == '.pdb':
-            pdb_id = base[base.find('-')+1 : base.find('F1')-1]
+            pdb_id = base[base.find('-')+1 : base.find('F1')-1].upper()
 
-        if extension == '.ent':
-            pdb_id = base[base.find('pdb')+1 : ]
+        elif extension == '.ent':
+            pdb_id = base[base.find('pdb')+3 : ].upper()
+
+        else:
+            continue
 
         # extract chain information from files
         f = open(filename, "r")
@@ -52,10 +55,11 @@ for root, dirs, files in os.walk(human_pdbs_dir):
                         chains = [char for char in chaines_info]
                         break
             
+            pdb_chain = pdb_id
             for letter in chains:
-                pdb_id = pdb_id + '_' + letter
+                pdb_chain = pdb_chain + '_' + letter
 
-            pdb_list.append(pdb_id)
+            pdb_list.append(pdb_chain)
         except:
             err_list.append(base)
         
@@ -71,10 +75,10 @@ for root, dirs, files in os.walk(human_pdbs_dir):
         shutil.copy(old_name, new_name)
                  
 
-with open("human_list.txt", "w") as output:
+with open(os.path.join(prep_masif,"human_list.txt"), "w") as output:
     for row in pdb_list:
         output.write(str(row) + '\n')
 
-with open("error_list.txt", "w") as output:
+with open(os.path.join(prep_masif,"error_list.txt"), "w") as output:
     for row in err_list:
         output.write(str(row) + '\n')
